@@ -1,0 +1,92 @@
+local dataStoreService = game:GetService("DataStoreService")
+local TableDataStore = dataStoreService:GetDataStore("WorkDataStore")
+game.Players.PlayerAdded:Connect(function(Player)
+	local userIdKey = Player.UserId.."TableData"
+	
+	local statistics = Instance.new("Folder",Player)
+	statistics.Name = "Statistics"
+	
+	local roundkills = Instance.new("IntValue", statistics)
+	roundkills.Name = "RoundKills"
+	
+	local leaderstats = Instance.new("Folder", Player)
+	leaderstats.Name = "leaderstats"
+
+	local kills = Instance.new("IntValue", leaderstats)
+	kills.Name = "Kills"
+
+	local plays = Instance.new("IntValue", leaderstats)
+	plays.Name = "Played Rounds"
+
+	local onions = Instance.new("IntValue", leaderstats)
+	onions.Name = "Onions"
+	
+	local data
+	local Success, Errormsg = pcall(function()
+		data = TableDataStore:GetAsync(userIdKey)
+	end)
+	if data and data[1] and data[2] and data[3] then
+		kills.Value = data[1]
+		plays.Value = data[2]
+		onions.Value = data[3]
+	else
+		kills.Value = 0
+		plays.Value = 0
+		onions.Value = 0
+	end
+	Player.CharacterAdded:connect(function(Character)
+		local Humanoid = Character:FindFirstChild "Humanoid"
+		if Humanoid then
+			Humanoid.Died:connect(function()
+				for i, Child in pairs(Humanoid:GetChildren()) do
+					if Child:IsA('ObjectValue') and Child.Value and Child.Value:IsA('Player') then
+						local Killer = Child.Value
+						if Killer:FindFirstChild 'leaderstats' and Killer.leaderstats:FindFirstChild "Kills" then
+							local Kills = Killer.leaderstats.Kills
+							local Onions = Killer.leaderstats.Onions
+							roundkills.Value += 1
+							Kills.Value = Kills.Value + 1
+							Onions.Value += 10
+						end
+						return
+					end
+				end
+			end)
+		end
+	end)
+end)
+
+
+game.Players.PlayerRemoving:Connect(function(Player)
+	local userIdKey = Player.UserId.."TableData"
+	local TableToSave = {}
+	table.insert(TableToSave,1,Player.leaderstats.Kills.Value)	
+	table.insert(TableToSave,2,Player.leaderstats["Played Rounds"].Value)
+	table.insert(TableToSave,3,Player.leaderstats.Onions.Value)
+	local Success, Errormsg = pcall(function()
+		TableDataStore:SetAsync(userIdKey, TableToSave)
+	end)
+	if Success then
+		print("Data Saved")
+	else
+		print(Errormsg)
+	end
+end)
+
+game:BindToClose(function()
+	for _, Player in pairs(game.Players:GetChildren()) do
+		local userIdKey = Player.UserId.."TableData"
+		local TableToSave = {}
+		table.insert(TableToSave,1,Player.leaderstats.Kills.Value)	
+		table.insert(TableToSave,2,Player.leaderstats["Played Rounds"].Value)
+		table.insert(TableToSave,3,Player.leaderstats.Onions.Value)
+		local Success, Errormsg = pcall(function()
+			TableDataStore:SetAsync(userIdKey, TableToSave)
+		end)
+		if Success then
+			print("Data Saved")
+		else
+			print(Errormsg)
+		end	
+	end
+end)
