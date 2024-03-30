@@ -1,0 +1,102 @@
+local rs = game:GetService("ReplicatedStorage")
+local players = game:GetService("Players")
+
+local loadingmap = rs.Remotes.MapLoading
+local giveItem = rs.Remotes.PlayerDied
+
+local toolsFolder = rs.Tools
+local starterPack = game.StarterPack
+
+local waiTime =5
+
+local map1 = rs.Maps.Map1
+local map2 = rs.Maps.Map2
+local map3 = rs.Maps.Map3
+local lobby = rs.Maps.Lobby
+
+local	function spawnItemOrb()
+	local orb = rs.Orbs.HealthOrb
+	orb:Clone()
+	local spawnZone = workspace:FindFirstChildOfClass("Model").ItemSpawnZone
+	orb.Position.X = spawnZone.Position.X
+	orb.Position.Z = spawnZone.Position.Z
+end
+
+local function clearBackpack()
+	for i,v in pairs(game.Players:GetChildren()) do
+		v.Backpack:ClearAllChildren()
+		v.Statistics.RoundKills.Value = 0
+	end
+end
+local function addPoints()
+	for i,v in pairs(game.Players:GetChildren()) do
+		v.leaderstats["Played Rounds"].Value += 1
+		v.leaderstats.Onions.Value += 10
+	end
+end
+local function fillBackpack()
+	addPoints()
+	for i, player in pairs(game.Players:GetChildren()) do
+		for i,tools in pairs(rs.Tools:GetChildren()) do
+			local clone = tools:Clone()
+			clone.Parent = player.Backpack
+		end
+	end
+end
+
+wait(1)
+local timer = rs.Timer
+while true do
+	clearBackpack()
+	rs.Remotes.Music:FireAllClients("Lobby")
+	lobby.Parent = workspace
+	timer.Value = 30
+	repeat
+		wait(1)
+		timer.Value -= 1
+	until(timer.Value == 0)
+	rs.Remotes.Music:FireAllClients("Lobby")
+	loadingmap:FireAllClients()
+	wait(2)
+	lobby.Parent = rs.Maps
+	timer.Value = 300
+	local nextMap = 1
+	if nextMap == 1 then
+		map1.Parent = workspace
+		wait(9.5)
+		spawnItemOrb()
+		fillBackpack()
+		repeat
+			wait(1)
+			timer.Value -= 1
+		until(timer.Value == 0)
+		loadingmap:FireAllClients()
+		wait(2)
+		map1.Parent = rs.Maps
+	elseif nextMap == 2 then
+		map2.Parent = workspace
+		wait(9.5)
+		fillBackpack()
+		repeat
+			wait(1)
+			timer.Value -= 1
+		until(timer.Value == 0)
+		loadingmap:FireAllClients()
+		wait(2)
+		map2.Parent = rs.Maps
+	elseif nextMap == 3 then
+		map3.Parent = workspace
+		wait(9.5)
+		fillBackpack()
+		repeat
+			wait(1)
+			timer.Value -= 1
+		until(timer.Value == 0)
+		loadingmap:FireAllClients()
+		wait(2)
+		map3.Parent = rs.Maps	
+		end	
+	end
+
+
+
